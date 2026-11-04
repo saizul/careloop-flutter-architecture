@@ -1,0 +1,3 @@
+-keepattributes *Annotation*
+-keep class com.google.firebase.** { *; }
+-keep class io.flutter.** { *; }

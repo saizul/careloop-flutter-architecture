@@ -17,7 +17,7 @@ This repository currently contains project architecture only. Product features a
 
 ## First Local Setup
 
-Flutter is not available in the current shell, so packages were not fetched here. Once Flutter is installed:
+Prerequisites: Flutter stable and the FlutterFire CLI.
 
 ```sh
 flutter pub get
@@ -31,6 +31,32 @@ After `flutterfire configure`, replace the placeholder values in:
 - `android/app/google-services.json`
 
 Keep real Firebase secrets out of public source control when appropriate.
+
+## Layers and data flow
+
+Each feature is split into three layers; dependencies only point inward.
+
+```text
+presentation (pages, widgets, view models)   Riverpod notifiers, no Firebase imports
+      |
+domain (entities, repository contracts, use cases)   pure Dart
+      |
+data (data sources, models, repository impls)   Firebase / network, mapped to domain
+```
+
+- Errors cross layer boundaries as `Failure` values wrapped in `Result` (`lib/core/result`, `lib/core/errors`) instead of thrown exceptions.
+- Firebase instances (Auth, Firestore, Storage, Messaging, Analytics) are exposed as Riverpod providers in `lib/core/firebase`, so tests can override them.
+- Routing lives in `lib/app/navigation`; role-specific shells (patient, doctor, admin) are keyed on `UserRole`.
+- Theme tokens (colors, spacing, text styles) are centralised under `lib/app/theme` and `lib/core/theme`; responsive helpers are in `lib/core/responsive`.
+
+## Quality checks
+
+```sh
+flutter analyze
+flutter test
+```
+
+Both run in CI (`.github/workflows/ci.yml`) on pushes to `main` and on pull requests.
 
 ## Folder Shape
 
